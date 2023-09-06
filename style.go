@@ -257,22 +257,22 @@ func (s Style) RenderWithProfile(p termenv.Profile, strs ...string) string {
 	}
 
 	if fg != noColor {
-		te = te.Foreground(fg.color(s.r))
+		te = te.Foreground(fg.color(p))
 		if styleWhitespace {
-			teWhitespace = teWhitespace.Foreground(fg.color(s.r))
+			teWhitespace = teWhitespace.Foreground(fg.color(p))
 		}
 		if useSpaceStyler {
-			teSpace = teSpace.Foreground(fg.color(s.r))
+			teSpace = teSpace.Foreground(fg.color(p))
 		}
 	}
 
 	if bg != noColor {
-		te = te.Background(bg.color(s.r))
+		te = te.Background(bg.color(p))
 		if colorWhitespace {
-			teWhitespace = teWhitespace.Background(bg.color(s.r))
+			teWhitespace = teWhitespace.Background(bg.color(p))
 		}
 		if useSpaceStyler {
-			teSpace = teSpace.Background(bg.color(s.r))
+			teSpace = teSpace.Background(bg.color(p))
 		}
 	}
 
@@ -379,8 +379,8 @@ func (s Style) RenderWithProfile(p termenv.Profile, strs ...string) string {
 	}
 
 	if !inline {
-		str = s.applyBorder(str)
-		str = s.applyMargins(str, inline)
+		str = s.applyBorder(p, str)
+		str = s.applyMargins(p, str, inline)
 	}
 
 	// Truncate according to MaxWidth
@@ -423,7 +423,7 @@ func (s Style) maybeConvertTabs(str string) string {
 	}
 }
 
-func (s Style) applyMargins(str string, inline bool) string {
+func (s Style) applyMargins(p termenv.Profile, str string, inline bool) string {
 	var (
 		topMargin    = s.getAsInt(marginTopKey)
 		rightMargin  = s.getAsInt(marginRightKey)
@@ -435,7 +435,7 @@ func (s Style) applyMargins(str string, inline bool) string {
 
 	bgc := s.getAsColor(marginBackgroundKey)
 	if bgc != noColor {
-		styler = styler.Background(bgc.color(s.r))
+		styler = styler.Background(bgc.color(p))
 	}
 
 	// Add left and right margin

@@ -8,7 +8,7 @@ import (
 
 // TerminalColor is a color intended to be rendered in the terminal.
 type TerminalColor interface {
-	color(*Renderer) termenv.Color
+	color(termenv.Profile) termenv.Color
 	RGBA() (r, g, b, a uint32)
 }
 
@@ -23,7 +23,7 @@ var noColor = NoColor{}
 //	var style = someStyle.Copy().Background(lipgloss.NoColor{})
 type NoColor struct{}
 
-func (NoColor) color(*Renderer) termenv.Color {
+func (NoColor) color(termenv.Profile) termenv.Color {
 	return termenv.NoColor{}
 }
 
@@ -44,8 +44,8 @@ func (n NoColor) RGBA() (r, g, b, a uint32) {
 //	hexColor := lipgloss.Color("#0000ff")
 type Color string
 
-func (c Color) color(r *Renderer) termenv.Color {
-	return r.ColorProfile().Color(string(c))
+func (c Color) color(p termenv.Profile) termenv.Color {
+	return p.Color(string(c))
 }
 
 // RGBA returns the RGBA value of this color. This satisfies the Go Color
@@ -55,7 +55,7 @@ func (c Color) color(r *Renderer) termenv.Color {
 //
 // Deprecated.
 func (c Color) RGBA() (r, g, b, a uint32) {
-	return termenv.ConvertToRGB(c.color(renderer)).RGBA()
+	return termenv.ConvertToRGB(c.color(renderer.ColorProfile())).RGBA()
 }
 
 // ANSIColor is a color specified by an ANSI color value. It's merely syntactic
@@ -69,8 +69,8 @@ func (c Color) RGBA() (r, g, b, a uint32) {
 //	colorB := lipgloss.Color("21")
 type ANSIColor uint
 
-func (ac ANSIColor) color(r *Renderer) termenv.Color {
-	return Color(strconv.FormatUint(uint64(ac), 10)).color(r)
+func (ac ANSIColor) color(p termenv.Profile) termenv.Color {
+	return Color(strconv.FormatUint(uint64(ac), 10)).color(p)
 }
 
 // RGBA returns the RGBA value of this color. This satisfies the Go Color
@@ -96,11 +96,11 @@ type AdaptiveColor struct {
 	Dark  string
 }
 
-func (ac AdaptiveColor) color(r *Renderer) termenv.Color {
-	if r.HasDarkBackground() {
-		return Color(ac.Dark).color(r)
+func (ac AdaptiveColor) color(p termenv.Profile) termenv.Color {
+	if HasDarkBackground() {
+		return Color(ac.Dark).color(p)
 	}
-	return Color(ac.Light).color(r)
+	return Color(ac.Light).color(p)
 }
 
 // RGBA returns the RGBA value of this color. This satisfies the Go Color
@@ -110,7 +110,7 @@ func (ac AdaptiveColor) color(r *Renderer) termenv.Color {
 //
 // Deprecated.
 func (ac AdaptiveColor) RGBA() (r, g, b, a uint32) {
-	return termenv.ConvertToRGB(ac.color(renderer)).RGBA()
+	return termenv.ConvertToRGB(ac.color(renderer.ColorProfile())).RGBA()
 }
 
 // CompleteColor specifies exact values for truecolor, ANSI256, and ANSI color
@@ -121,8 +121,7 @@ type CompleteColor struct {
 	ANSI      string
 }
 
-func (c CompleteColor) color(r *Renderer) termenv.Color {
-	p := r.ColorProfile()
+func (c CompleteColor) color(p termenv.Profile) termenv.Color {
 	switch p { //nolint:exhaustive
 	case termenv.TrueColor:
 		return p.Color(c.TrueColor)
@@ -143,7 +142,7 @@ func (c CompleteColor) color(r *Renderer) termenv.Color {
 //
 // Deprecated.
 func (c CompleteColor) RGBA() (r, g, b, a uint32) {
-	return termenv.ConvertToRGB(c.color(renderer)).RGBA()
+	return termenv.ConvertToRGB(c.color(renderer.ColorProfile())).RGBA()
 }
 
 // CompleteAdaptiveColor specifies exact values for truecolor, ANSI256, and ANSI color
@@ -154,11 +153,11 @@ type CompleteAdaptiveColor struct {
 	Dark  CompleteColor
 }
 
-func (cac CompleteAdaptiveColor) color(r *Renderer) termenv.Color {
-	if r.HasDarkBackground() {
-		return cac.Dark.color(r)
+func (cac CompleteAdaptiveColor) color(p termenv.Profile) termenv.Color {
+	if HasDarkBackground() {
+		return cac.Dark.color(p)
 	}
-	return cac.Light.color(r)
+	return cac.Light.color(p)
 }
 
 // RGBA returns the RGBA value of this color. This satisfies the Go Color
@@ -168,5 +167,5 @@ func (cac CompleteAdaptiveColor) color(r *Renderer) termenv.Color {
 //
 // Deprecated.
 func (cac CompleteAdaptiveColor) RGBA() (r, g, b, a uint32) {
-	return termenv.ConvertToRGB(cac.color(renderer)).RGBA()
+	return termenv.ConvertToRGB(cac.color(renderer.ColorProfile())).RGBA()
 }
