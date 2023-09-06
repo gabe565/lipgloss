@@ -173,8 +173,8 @@ func (s Style) Inherit(i Style) Style {
 	return s
 }
 
-// Render applies the defined style formatting to a given string.
-func (s Style) Render(strs ...string) string {
+// RenderWithProfile applies the defined style formatting to a given string.
+func (s Style) RenderWithProfile(p termenv.Profile, strs ...string) string {
 	if s.r == nil {
 		s.r = renderer
 	}
@@ -185,7 +185,6 @@ func (s Style) Render(strs ...string) string {
 	var (
 		str = joinString(strs...)
 
-		p            = s.r.ColorProfile()
 		te           = p.String()
 		teSpace      = p.String()
 		teWhitespace = p.String()
@@ -402,6 +401,11 @@ func (s Style) Render(strs ...string) string {
 	}
 
 	return str
+}
+
+// Render applies the defined style formatting to a given string.
+func (s Style) Render(strs ...string) string {
+	return s.RenderWithProfile(s.r.ColorProfile(), strs...)
 }
 
 func (s Style) maybeConvertTabs(str string) string {
